@@ -104,6 +104,9 @@ class SudokuGame:
         self.undo_queue.push([row[:] for row in self.sudoku_board])
         self.update_board()
 
+        if self.is_complete():
+            messagebox.showinfo("Felicidades", "¡Sudoku completado!")
+
     def is_complete(self):
         for i in range(9):
             for j in range(9):
