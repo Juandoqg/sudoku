@@ -115,11 +115,23 @@ class SudokuGame:
         return True
 
     def undo(self):
-        if self.undo_queue.is_empty():
-            return
-        self.sudoku_board = self.undo_queue.pop()
-        self.record_move("Deshacer", None, None, None)
-        self.update_board()
+     if self.undo_queue.is_empty():
+        return
+
+     previous_state = self.undo_queue.pop()
+     if previous_state:
+        self.sudoku_board = [row[:] for row in previous_state]
+
+     if self.history:
+        # Obtén la última jugada sin eliminarla del historial
+        action, row, col, number = self.history[-1]
+
+        # Actualiza el estado del tablero solo si es una nueva inserción
+        if action == "Insertado":
+            self.sudoku_board[row][col] = 0
+
+        self.record_move("Deshacer", row, col, number)
+     self.update_board()
 
     def redo(self):
         if self.undo_queue.is_empty():
@@ -142,7 +154,7 @@ class SudokuGame:
         if move is not None:
             i, j, n = move
             self.insert_number(i, j, n)
-            self.record_move("Nueva", i, j, n)       
+            self.record_move("Sugerencia", i, j, n)       
 
     def view_moves(self):
         moves_text = "\n".join([f"{action}: {number} en ({row}, {col})" if action != "Nueva" else f"{action} en ({row}, {col}) con {number}" for action, row, col, number in self.history])
