@@ -133,12 +133,32 @@ class SudokuGame:
         self.record_move("Deshacer", row, col, number)
      self.update_board()
 
+
+
     def redo(self):
-        if self.undo_queue.is_empty():
-            return
-        self.sudoku_board = self.undo_queue.queue[-1]
-        self.record_move("Rehacer", None, None, None)
-        self.update_board()
+     if self.undo_queue.is_empty():
+        return
+
+    # Obtener el estado anterior al deshacer
+     previous_state = self.undo_queue.queue[-1]
+
+    # Deshacer una vez más para obtener la jugada original
+     redo_state = self.undo_queue.pop()
+ 
+     if redo_state:
+        self.sudoku_board = [row[:] for row in redo_state]
+
+        # Asegurarse de que haya jugadas en el historial
+        if self.history:
+            # Extraer la última jugada del historial
+            action, row, col, number = self.history[-1]
+            
+            # Actualizar el estado del tablero y el historial
+            self.sudoku_board[row][col] = number
+            self.record_move("Rehacer", row, col, number)
+     self.update_board() 
+
+
 
     def get_suggested_move(self):
         for i in range(9):
@@ -148,6 +168,8 @@ class SudokuGame:
                         if self.is_valid_move(i, j, n):
                             return i, j, n
         return None
+
+
 
     def suggested_move_button_click(self):
         move = self.get_suggested_move()
