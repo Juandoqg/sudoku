@@ -3,20 +3,25 @@ from tkinter import filedialog, simpledialog, messagebox
 
 class UndoStack:
     def __init__(self):
+        """Clase que implementa una pila para realizar deshacer y rehacer."""
         self.stack = []
 
     def push(self, item):
+        """Añade un estado al tope de la pila."""
         self.stack.append(item)
 
     def pop(self):
+        """Elimina y devuelve el estado en el tope de la pila."""
         if self.stack:
             return self.stack.pop()
 
     def is_empty(self):
+        """Verifica si la pila está vacía."""
         return not bool(self.stack)
 
 class SudokuGame:
     def __init__(self):
+        """Clase principal que representa el juego de Sudoku."""
         self.root = tk.Tk()
         self.root.title("Sudoku")
         self.sudoku_board = [[0] * 9 for _ in range(9)]
@@ -25,6 +30,7 @@ class SudokuGame:
         self.create_widgets()
 
     def create_widgets(self):
+        """Crea los widgets (etiquetas y botones) para la interfaz de usuario."""
         self.labels = []
 
         rows, cols = 9, 9
@@ -75,6 +81,7 @@ class SudokuGame:
         self.view_moves_button.grid(row=rows + 1, column=3, columnspan=3)
 
     def update_board(self):
+        """Actualiza la interfaz gráfica del tablero de Sudoku."""
         for i in range(9):
             for j in range(9):
                 value = self.sudoku_board[i][j]
@@ -82,6 +89,7 @@ class SudokuGame:
                 label.config(text=str(value) if value != 0 else "")
 
     def load_board_from_file(self):
+        """Carga un tablero de Sudoku desde un archivo de texto."""
         file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
         if file_path:
             with open(file_path, 'r') as file:
@@ -93,6 +101,7 @@ class SudokuGame:
             self.update_board()
 
     def is_valid_move(self, f, c, n):
+        """Verifica si un movimiento es válido en el Sudoku."""
         for i in range(9):
             if self.sudoku_board[f][i] == n or self.sudoku_board[i][c] == n:
                 return False
@@ -105,12 +114,14 @@ class SudokuGame:
         return True
 
     def record_move(self, action, row, col, number):
+        """Registra un movimiento en el historial."""
         if action == "Nueva" and row is not None and col is not None and number is not None:
             self.history.append((action, row, col, number))
         elif action != "Nueva":
             self.history.append((action, row, col, number))
 
     def cell_clicked(self, row, col):
+        """Maneja el evento de clic en una celda."""
         current_value = self.sudoku_board[row][col]
         user_input = simpledialog.askinteger("Ingresar número", f"Ingrese un número para la celda ({row}, {col}):", initialvalue=current_value, minvalue=0, maxvalue=9)
 
@@ -122,6 +133,7 @@ class SudokuGame:
                 self.record_move("Insertado", row, col, user_input)
 
     def insert_number(self, f, c, n):
+        """Inserta un número en el tablero de Sudoku."""
         self.sudoku_board[f][c] = n
         self.undo_stack.push([row[:] for row in self.sudoku_board])
         self.update_board()
@@ -130,6 +142,7 @@ class SudokuGame:
             messagebox.showinfo("Felicidades", "¡Sudoku completado!")
 
     def is_complete(self):
+        """Verifica si el tablero de Sudoku está completo."""
         for i in range(9):
             for j in range(9):
                 if self.sudoku_board[i][j] == 0:
@@ -137,6 +150,7 @@ class SudokuGame:
         return True
 
     def undo(self):
+        """Deshace el último movimiento."""
         if self.undo_stack.is_empty():
             return
 
@@ -154,6 +168,7 @@ class SudokuGame:
         self.update_board()
 
     def redo(self):
+        """Rehace el último movimiento deshecho."""
         if self.undo_stack.is_empty():
             return
 
@@ -171,6 +186,7 @@ class SudokuGame:
         self.update_board()
 
     def get_suggested_move(self):
+        """Obtiene un movimiento sugerido para el Sudoku."""
         for i in range(9):
             for j in range(9):
                 if self.sudoku_board[i][j] == 0:
@@ -180,6 +196,7 @@ class SudokuGame:
         return None
 
     def suggested_move_button_click(self):
+        """Maneja el clic en el botón de sugerencia."""
         move = self.get_suggested_move()
         if move is not None:
             i, j, n = move
@@ -187,6 +204,7 @@ class SudokuGame:
             self.record_move("Sugerencia", i, j, n)
 
     def view_moves(self):
+        """Muestra un cuadro de diálogo con el historial de movimientos."""
         moves_text = "\n".join([f"{action}: {number} en ({row}, {col})" if action != "Nueva" else f"{action} en ({row}, {col}) con {number}" for action, row, col, number in self.history])
         messagebox.showinfo("Historial de Jugadas", moves_text)
 
