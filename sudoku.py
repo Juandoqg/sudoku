@@ -4,20 +4,25 @@ from collections import deque
 
 class UndoQueue:
     def __init__(self, max_size):
+        # Clase para gestionar una cola de deshacer con un tamaño máximo
         self.queue = deque(maxlen=max_size)
 
     def push(self, item):
+        # Agregar un estado a la cola de deshacer
         self.queue.append(item)
 
     def pop(self):
+        # Deshacer la última acción y devolver el estado anterior
         if self.queue:
             return self.queue.pop()
 
     def is_empty(self):
+        # Verificar si la cola de deshacer está vacía
         return not bool(self.queue)
 
 class SudokuGame:
     def __init__(self):
+        # Configuración inicial del juego
         self.root = tk.Tk()
         self.root.title("Sudoku")
         self.sudoku_board = [[0] * 9 for _ in range(9)]
@@ -26,6 +31,7 @@ class SudokuGame:
         self.create_widgets()
 
     def create_widgets(self):
+        # Crear la interfaz gráfica del juego
         self.labels = []
 
         for i in range(9):
@@ -53,12 +59,14 @@ class SudokuGame:
         self.view_moves_button.grid(row=11, column=3, columnspan=3)
 
     def update_board(self):
+        # Actualizar la interfaz gráfica del tablero
         for i in range(9):
             for j in range(9):
                 value = self.sudoku_board[i][j]
                 self.labels[i][j].config(text=str(value) if value != 0 else "")
 
     def load_board_from_file(self):
+        # Cargar un tablero de Sudoku desde un archivo
         file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
         if file_path:
             with open(file_path, 'r') as file:
@@ -70,6 +78,7 @@ class SudokuGame:
             self.update_board()
 
     def is_valid_move(self, f, c, n):
+        # Verificar si un movimiento es válido en una posición específica
         for i in range(9):
             if self.sudoku_board[f][i] == n or self.sudoku_board[i][c] == n:
                 return False
@@ -82,13 +91,14 @@ class SudokuGame:
         return True
 
     def record_move(self, action, row, col, number):
-     if action == "Nueva" and row is not None and col is not None and number is not None:
-        self.history.append((action, row, col, number))
-     elif action != "Nueva":
-        self.history.append((action, row, col, number))
-
+        # Registrar un movimiento en el historial
+        if action == "Nueva" and row is not None and col is not None and number is not None:
+            self.history.append((action, row, col, number))
+        elif action != "Nueva":
+            self.history.append((action, row, col, number))
 
     def cell_clicked(self, row, col):
+        # Manejar el clic en una celda del tablero
         current_value = self.sudoku_board[row][col]
         user_input = simpledialog.askinteger("Ingresar número", f"Ingrese un número para la celda ({row}, {col}):", initialvalue=current_value, minvalue=0, maxvalue=9)
 
@@ -100,6 +110,7 @@ class SudokuGame:
                 self.record_move("Insertado", row, col, user_input)
 
     def insert_number(self, f, c, n):
+        # Insertar un número en el tablero
         self.sudoku_board[f][c] = n
         self.undo_queue.push([row[:] for row in self.sudoku_board])
         self.update_board()
@@ -108,6 +119,7 @@ class SudokuGame:
             messagebox.showinfo("Felicidades", "¡Sudoku completado!")
 
     def is_complete(self):
+        # Verificar si el tablero está completo
         for i in range(9):
             for j in range(9):
                 if self.sudoku_board[i][j] == 0:
@@ -115,52 +127,51 @@ class SudokuGame:
         return True
 
     def undo(self):
-     if self.undo_queue.is_empty():
-        return
+        # Deshacer la última acción
+        if self.undo_queue.is_empty():
+            return
 
-     previous_state = self.undo_queue.pop()
-     if previous_state:
-        self.sudoku_board = [row[:] for row in previous_state]
+        previous_state = self.undo_queue.pop()
+        if previous_state:
+            self.sudoku_board = [row[:] for row in previous_state]
 
-     if self.history:
-        # Obtén la última jugada sin eliminarla del historial
-        action, row, col, number = self.history[-1]
+        if self.history:
+            # Obtén la última jugada sin eliminarla del historial
+            action, row, col, number = self.history[-1]
 
-        # Actualiza el estado del tablero solo si es una nueva inserción
-        if action == "Insertado":
-            self.sudoku_board[row][col] = 0
+            # Actualiza el estado del tablero solo si es una nueva inserción
+            if action == "Insertado":
+                self.sudoku_board[row][col] = 0
 
-        self.record_move("Deshacer", row, col, number)
-     self.update_board()
-
-
+            self.record_move("Deshacer", row, col, number)
+        self.update_board()
 
     def redo(self):
-     if self.undo_queue.is_empty():
-        return
+        # Rehacer la última acción deshecha
+        if self.undo_queue.is_empty():
+            return
 
-    # Obtener el estado anterior al deshacer
-     previous_state = self.undo_queue.queue[-1]
+        # Obtener el estado anterior al deshacer
+        previous_state = self.undo_queue.queue[-1]
 
-    # Deshacer una vez más para obtener la jugada original
-     redo_state = self.undo_queue.pop()
- 
-     if redo_state:
-        self.sudoku_board = [row[:] for row in redo_state]
+        # Deshacer una vez más para obtener la jugada original
+        redo_state = self.undo_queue.pop()
 
-        # Asegurarse de que haya jugadas en el historial
-        if self.history:
-            # Extraer la última jugada del historial
-            action, row, col, number = self.history[-1]
-            
-            # Actualizar el estado del tablero y el historial
-            self.sudoku_board[row][col] = number
-            self.record_move("Rehacer", row, col, number)
-     self.update_board() 
+        if redo_state:
+            self.sudoku_board = [row[:] for row in redo_state]
 
+            # Asegurarse de que haya jugadas en el historial
+            if self.history:
+                # Extraer la última jugada del historial
+                action, row, col, number = self.history[-1]
 
+                # Actualizar el estado del tablero y el historial
+                self.sudoku_board[row][col] = number
+                self.record_move("Rehacer", row, col, number)
+        self.update_board()
 
     def get_suggested_move(self):
+        # Obtener una sugerencia de movimiento
         for i in range(9):
             for j in range(9):
                 if self.sudoku_board[i][j] == 0:
@@ -169,22 +180,20 @@ class SudokuGame:
                             return i, j, n
         return None
 
-
-
     def suggested_move_button_click(self):
+        # Manejar el clic en el botón de sugerencia
         move = self.get_suggested_move()
         if move is not None:
             i, j, n = move
             self.insert_number(i, j, n)
-            self.record_move("Sugerencia", i, j, n)       
+            self.record_move("Sugerencia", i, j, n)
 
     def view_moves(self):
+        # Mostrar el historial de jugadas
         moves_text = "\n".join([f"{action}: {number} en ({row}, {col})" if action != "Nueva" else f"{action} en ({row}, {col}) con {number}" for action, row, col, number in self.history])
         messagebox.showinfo("Historial de Jugadas", moves_text)
 
-    
-    
-
 if __name__ == "__main__":
+    # Iniciar el juego
     game = SudokuGame()
     game.root.mainloop()
