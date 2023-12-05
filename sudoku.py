@@ -1,24 +1,23 @@
 import tkinter as tk
 from tkinter import filedialog, simpledialog, messagebox
-from collections import deque
 
-class UndoQueue:
-    def __init__(self, max_size):
-        # Clase para gestionar una cola de deshacer con un tamaño máximo
-        self.queue = deque(maxlen=max_size)
+class UndoStack:
+    def __init__(self):
+        # Clase para gestionar una pila de deshacer
+        self.stack = []
 
     def push(self, item):
-        # Agregar un estado a la cola de deshacer
-        self.queue.append(item)
+        # Agregar un estado a la pila de deshacer
+        self.stack.append(item)
 
     def pop(self):
         # Deshacer la última acción y devolver el estado anterior
-        if self.queue:
-            return self.queue.pop()
+        if self.stack:
+            return self.stack.pop()
 
     def is_empty(self):
-        # Verificar si la cola de deshacer está vacía
-        return not bool(self.queue)
+        # Verificar si la pila de deshacer está vacía
+        return not bool(self.stack)
 
 class SudokuGame:
     def __init__(self):
@@ -26,7 +25,7 @@ class SudokuGame:
         self.root = tk.Tk()
         self.root.title("Sudoku")
         self.sudoku_board = [[0] * 9 for _ in range(9)]
-        self.undo_queue = UndoQueue(max_size=10)
+        self.undo_stack = UndoStack()
         self.history = []  # Historial de jugadas
         self.create_widgets()
 
@@ -74,7 +73,7 @@ class SudokuGame:
                 for line in file:
                     row = [int(num) if num.isdigit() else 0 for num in line.strip().replace('-', '0')]
                     self.sudoku_board.append(row)
-            self.undo_queue.push([row[:] for row in self.sudoku_board])
+            self.undo_stack.push([row[:] for row in self.sudoku_board])
             self.update_board()
 
     def is_valid_move(self, f, c, n):
@@ -112,7 +111,7 @@ class SudokuGame:
     def insert_number(self, f, c, n):
         # Insertar un número en el tablero
         self.sudoku_board[f][c] = n
-        self.undo_queue.push([row[:] for row in self.sudoku_board])
+        self.undo_stack.push([row[:] for row in self.sudoku_board])
         self.update_board()
 
         if self.is_complete():
@@ -128,10 +127,10 @@ class SudokuGame:
 
     def undo(self):
         # Deshacer la última acción
-        if self.undo_queue.is_empty():
+        if self.undo_stack.is_empty():
             return
 
-        previous_state = self.undo_queue.pop()
+        previous_state = self.undo_stack.pop()
         if previous_state:
             self.sudoku_board = [row[:] for row in previous_state]
 
@@ -148,14 +147,14 @@ class SudokuGame:
 
     def redo(self):
         # Rehacer la última acción deshecha
-        if self.undo_queue.is_empty():
+        if self.undo_stack.is_empty():
             return
 
         # Obtener el estado anterior al deshacer
-        previous_state = self.undo_queue.queue[-1]
+        previous_state = self.undo_stack.stack[-1]
 
         # Deshacer una vez más para obtener la jugada original
-        redo_state = self.undo_queue.pop()
+        redo_state = self.undo_stack.pop()
 
         if redo_state:
             self.sudoku_board = [row[:] for row in redo_state]
