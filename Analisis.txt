@@ -1,0 +1,22 @@
+Carga del tablero desde un archivo:
+
+La función load_board_from_file abre un archivo y lee cada línea para cargar el tablero. La complejidad de esta operación es lineal con respecto al tamaño del archivo y, por ende, al tamaño del tablero. En términos de notación big-O, es O(n), donde n es el número total de celdas en el tablero.
+Verificación de la validez de un movimiento:
+
+La función is_valid_move verifica si un movimiento es válido al revisar la fila, columna y región correspondientes. En el peor caso, recorre una fila, una columna y una región, lo que implica una complejidad de O(3n) o simplemente O(n), donde n es el tamaño del tablero.
+Registro de movimientos y actualización del tablero:
+
+Las funciones record_move, insert_number, undo, redo y update_board realizan operaciones que involucran la actualización del tablero y el mantenimiento del historial. Estas operaciones son de complejidad O(n), donde n es el tamaño del tablero, ya que se recorre cada celda.
+Búsqueda de movimiento sugerido:
+
+La función get_suggested_move busca un movimiento sugerido. En el peor caso, podría recorrer todas las celdas y probar cada número, lo que resultaría en una complejidad de O(n^2).
+Interfaz gráfica y manejo de eventos:
+
+La interfaz gráfica y el manejo de eventos están implementados con la biblioteca Tkinter, y el tiempo de ejecución de las operaciones gráficas puede depender de la implementación específica y de las interacciones del usuario. Por lo general, las operaciones gráficas no tienen una gran influencia en la complejidad total del algoritmo, ya que son principalmente operaciones de entrada/salida.
+En general, el tiempo de ejecución del juego de Sudoku está dominado por la manipulación del tablero y las operaciones asociadas con él. El rendimiento puede variar según la implementación específica y la eficiencia de las operaciones de la biblioteca Tkinter para la interfaz gráfica. La complejidad total del juego es principalmente lineal en términos del tamaño del tablero (O(n)). La mayoría de las operaciones realizadas en el juego tienen complejidad lineal o constante con respecto al tamaño del tablero, lo que es eficiente para tamaños de tablero típicos de Sudoku.
+
+
+
+
+
+

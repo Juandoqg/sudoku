@@ -3,7 +3,7 @@ from tkinter import filedialog, simpledialog, messagebox
 
 class UndoStack:
     def __init__(self):
-        """Clase que implementa una pila para realizar deshacer y rehacer."""
+        """Clase que implementa una pila para realizar deshacer."""
         self.stack = []
 
     def push(self, item):
@@ -19,6 +19,34 @@ class UndoStack:
         """Verifica si la pila está vacía."""
         return not bool(self.stack)
 
+    def print_stack(self):
+        """Imprime la pila por consola."""
+        print("Undo Stack:", self.stack)
+        print()
+
+class RedoStack:
+    def __init__(self):
+        """Clase que implementa una pila para realizar rehacer."""
+        self.stack = []
+
+    def push(self, item):
+        """Añade un estado al tope de la pila."""
+        self.stack.append(item)
+
+    def pop(self):
+        """Elimina y devuelve el estado en el tope de la pila."""
+        if self.stack:
+            return self.stack.pop()
+
+    def is_empty(self):
+        """Verifica si la pila está vacía."""
+        return not bool(self.stack)
+
+    def print_stack(self):
+        """Imprime la pila por consola."""
+        print("Redo Stack:", self.stack)
+        print()
+
 class SudokuGame:
     def __init__(self):
         """Clase principal que representa el juego de Sudoku."""
@@ -26,6 +54,7 @@ class SudokuGame:
         self.root.title("Sudoku")
         self.sudoku_board = [[0] * 9 for _ in range(9)]
         self.undo_stack = UndoStack()
+        self.redo_stack = RedoStack()
         self.history = []
         self.create_widgets()
 
@@ -157,6 +186,7 @@ class SudokuGame:
         previous_state = self.undo_stack.pop()
         if previous_state:
             self.sudoku_board = [row[:] for row in previous_state]
+            self.redo_stack.push([row[:] for row in previous_state])
 
         if self.history:
             action, row, col, number = self.history[-1]
@@ -166,17 +196,18 @@ class SudokuGame:
 
             self.record_move("Deshacer", row, col, number)
         self.update_board()
+        self.undo_stack.print_stack()
+        self.redo_stack.print_stack()
 
     def redo(self):
         """Rehace el último movimiento deshecho."""
-        if self.undo_stack.is_empty():
+        if self.redo_stack.is_empty():
             return
 
-        previous_state = self.undo_stack.stack[-1]
-        redo_state = self.undo_stack.pop()
-
+        redo_state = self.redo_stack.pop()
         if redo_state:
             self.sudoku_board = [row[:] for row in redo_state]
+            self.undo_stack.push([row[:] for row in redo_state])
 
             if self.history:
                 action, row, col, number = self.history[-1]
@@ -184,6 +215,8 @@ class SudokuGame:
                 self.sudoku_board[row][col] = number
                 self.record_move("Rehacer", row, col, number)
         self.update_board()
+        self.undo_stack.print_stack()
+        self.redo_stack.print_stack()
 
     def get_suggested_move(self):
         """Obtiene un movimiento sugerido para el Sudoku."""
