@@ -181,19 +181,20 @@ class SudokuGame:
     def undo(self):
         """Deshace el último movimiento."""
         if self.undo_stack.is_empty():
+            self.update_board()
             return
 
         previous_state = self.undo_stack.pop()
         if previous_state:
             self.sudoku_board = [row[:] for row in previous_state]
             self.redo_stack.push([row[:] for row in previous_state])
-
+            self.update_board()
         if self.history:
             action, row, col, number = self.history[-1]
-
+            self.update_board()
             if action == "Insertado":
                 self.sudoku_board[row][col] = 0
-
+                self.update_board()
             self.record_move("Deshacer", row, col, number)
         self.update_board()
         self.undo_stack.print_stack()
@@ -202,18 +203,19 @@ class SudokuGame:
     def redo(self):
         """Rehace el último movimiento deshecho."""
         if self.redo_stack.is_empty():
+            self.update_board()
             return
 
         redo_state = self.redo_stack.pop()
         if redo_state:
             self.sudoku_board = [row[:] for row in redo_state]
             self.undo_stack.push([row[:] for row in redo_state])
-
+            self.update_board()
             if self.history:
                 action, row, col, number = self.history[-1]
-
                 self.sudoku_board[row][col] = number
                 self.record_move("Rehacer", row, col, number)
+                self.update_board()
         self.update_board()
         self.undo_stack.print_stack()
         self.redo_stack.print_stack()
